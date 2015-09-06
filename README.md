@@ -10,4 +10,5 @@ Steps required to build the package on a QNAP TVS:
     mv CouchPotatoServer/* CouchPotatoServer/.* .
     rm -rf CouchPotatoServer
 
+    cd ..
     qbuild

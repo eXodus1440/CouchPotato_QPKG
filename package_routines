@@ -94,6 +94,34 @@
 ## Path to ipkg or opkg package tool if installed.
 #CMD_PKG_TOOL=
 #
+
+# Find the Public share
+PUBLIC_SHARE=`$CMD_GETCFG SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
+
+# Determine BASE installation location according to smb.conf
+BASE=
+publicdir=`$CMD_GETCFG $PUBLIC_SHARE path -f /etc/config/smb.conf`
+if [ ! -z $publicdir ] && [ -d $publicdir ];then
+  publicdirp1=`$CMD_ECHO $publicdir | $CMD_CUT -d "/" -f 2`
+  publicdirp2=`$CMD_ECHO $publicdir | $CMD_CUT -d "/" -f 3`
+  publicdirp3=`$CMD_ECHO $publicdir | $CMD_CUT -d "/" -f 4`
+  if [ ! -z $publicdirp1 ] && [ ! -z $publicdirp2 ] && [ ! -z $publicdirp3 ]; then
+    [ -d "/${publicdirp1}/${publicdirp2}/${PUBLIC_SHARE}" ] && BASE="/${publicdirp1}/${publicdirp2}"
+  fi
+fi
+
+# Determine BASE installation location by checking where the Public folder is.
+if [ -z $BASE ]; then
+  for datadirtest in /share/HDA_DATA /share/HDB_DATA /share/HDC_DATA /share/HDD_DATA /share/MD0_DATA; do
+    [ -d $datadirtest/$PUBLIC_SHARE ] && BASE="/${publicdirp1}/${publicdirp2}"
+  done
+fi
+if [ -z $BASE ] ; then
+  echo "The Public share not found."
+  $CMD_WLOG "[$QPKG_NAME] The Public share was not found." 1
+  exit 1
+fi
+
 ######################################################################
 # All package specific functions shall call 'err_log MSG' if an error
 # is detected that shall terminate the installation.
@@ -140,5 +168,38 @@ pkg_pre_install(){
 #pkg_install(){
 #}
 #
-#pkg_post_install(){
-#}
+pkg_post_install(){ 
+
+  # Set a few defaults, assuming connecting into SABnzbdPlus and not Torrent
+  $CMD_SETCFG core launch_browser 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+  $CMD_SETCFG blackhole enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+  $CMD_SETCFG kickasstorrents enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+  $CMD_SETCFG torrentz enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+  $CMD_SETCFG searcher preferred_method nzb -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+
+  # Get values from SABnzbdPlus Configs
+  SABnzbdPlus_Path=$($CMD_GETCFG SABnzbdPlus Install_Path -f /etc/config/qpkg.conf)
+  if [ -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini ] ; then
+    SABnzbdPlus_WEBUI_HTTPS=$($CMD_GETCFG misc enable_https -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
+    SABnzbdPlus_WEBUI_IP=$($CMD_GETCFG misc host -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
+    if [ "$SABnzbdPlus_WEBUI_HTTPS" = "0" ]; then
+      SABnzbdPlus_WEBUI_PORT=$($CMD_GETCFG misc port -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
+      $CMD_SETCFG sabnzbd host ${SABnzbdPlus_WEBUI_IP}:${SABnzbdPlus_WEBUI_PORT} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    else
+      SABnzbdPlus_WEBUI_PORT=$($CMD_GETCFG misc https_port -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
+      $CMD_SETCFG sabnzbd ssl 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+      $CMD_SETCFG sabnzbd host ${SABnzbdPlus_WEBUI_IP}:${SABnzbdPlus_WEBUI_PORT} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    fi
+    SABnzbdPlus_APIKEY=$($CMD_GETCFG misc api_key -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
+
+    # Set SABnzbdPlus values in CouchPotato 
+    $CMD_SETCFG sabnzbd enabled 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG sabnzbd api_key ${SABnzbdPlus_APIKEY} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG sabnzbd category Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    # Set Renamer values based on SABnzbdPlus values
+    $CMD_SETCFG renamer enabled 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG renamer from ${BASE}/${PUBLIC_SHARE}/Downloads/complete -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG renamer cleanup 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+  fi
+
+}

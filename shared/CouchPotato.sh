@@ -11,12 +11,11 @@ case "$1" in
         echo "$QPKG_NAME is disabled."
         exit 1
     fi
-    : ADD START ACTIONS HERE
-    /usr/local/bin/python ${QPKG_ROOT}/CouchPotato.py --daemon --pid_file=${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid --data_dir=${QPKG_ROOT}/.couchpotato
+    
+    /opt/bin/python2.6 ${QPKG_ROOT}/CouchPotato.py --daemon --pid_file=${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid --data_dir=${QPKG_ROOT}/.couchpotato
     ;;
 
   stop)
-    : ADD STOP ACTIONS HERE
     PID=$(cat ${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid)
     kill -9 ${PID}
 
