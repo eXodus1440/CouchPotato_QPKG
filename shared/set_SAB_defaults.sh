@@ -2,8 +2,8 @@
 
 CMD_GETCFG="/sbin/getcfg"
 CMD_SETCFG="/sbin/setcfg"
-SYS_QPKG_DIR=$(CMD_SETCFG CouchPotato Install_Path -f /etc/config/qpkg.conf)
-SABnzbdPlus_Installed=$(CMD_SETCFG SABnzbdPlus Status -f /etc/config/qpkg.conf)
+SYS_QPKG_DIR=$($CMD_SETCFG CouchPotato Install_Path -f /etc/config/qpkg.conf)
+SABnzbdPlus_Installed=$($CMD_SETCFG SABnzbdPlus Status -f /etc/config/qpkg.conf)
 
 # Determine BASE installation location according to smb.conf
 BASE=
