@@ -1,26 +1,88 @@
 #!/bin/sh
 CONF=/etc/config/qpkg.conf
+CMD_GETCFG="/sbin/getcfg"
+CMD_SETCFG="/sbin/setcfg"
+
 QPKG_NAME="CouchPotato"
-QPKG_ROOT=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
-WEBUI_PORT=5050
+QPKG_ROOT=$(${CMD_GETCFG} ${QPKG_NAME} Install_Path -f ${CONF})
+PYTHON_DIR="/opt/bin"
+#PATH="${QPKG_ROOT}/bin:${QPKG_ROOT}/env/bin:${PYTHON_DIR}/bin:/usr/local/bin:/bin:/usr/bin:/usr/syno/bin"
+PYTHON="${PYTHON_DIR}/python2.6"
+COUCHPOTATO="${QPKG_ROOT}/CouchPotato.py"
+QPKG_DATA=${QPKG_ROOT}/.couchpotato
+QPKG_CONF=${QPKG_DATA}/settings.conf
+WEBUI_PORT=$(${CMD_GETCFG} core port -f ${QPKG_CONF})
+QPKG_PID=${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid
+
+start_daemon() {
+  #PATH=${PATH} ${PYTHON} ${COUCHPOTATO} --daemon --pid_file ${QPKG_PID} --data_dir=${QPKG_DATA} --config ${QPKG_CONF}
+  ${PYTHON} ${COUCHPOTATO} --daemon --pid_file ${QPKG_PID} --data_dir=${QPKG_DATA} --config ${QPKG_CONF}
+}
+
+stop_daemon() {
+  kill $(cat ${QPKG_PID})
+  wait_for_status 1 20
+  if [ -f ${QPKG_PID} ] ; then rm -f ${QPKG_PID} ; fi
+}
+
+daemon_status() {
+  if [ -f ${QPKG_PID} ] && [ -d /proc/$(cat ${QPKG_PID} 2>/dev/null) ]; then
+    return 0
+  fi
+  return 1
+}
+
+wait_for_status() {
+  counter=$2
+  while [ ${counter} -gt 0 ]; do
+    daemon_status
+    [ $? -eq $1 ] && break
+    let counter=counter-1
+    sleep 1
+  done
+}
 
 case "$1" in
   start)
-    ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
-    if [ "$ENABLED" != "TRUE" ]; then
-        echo "$QPKG_NAME is disabled."
+    ENABLED=$(/sbin/getcfg ${QPKG_NAME} Enable -u -d FALSE -f $CONF)
+    if [ "${ENABLED}" != "TRUE" ]; then
+        echo "${QPKG_NAME} is disabled ..."
         exit 1
     fi
     
-    /opt/bin/python2.6 ${QPKG_ROOT}/CouchPotato.py --daemon --pid_file=${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid --data_dir=${QPKG_ROOT}/.couchpotato
+    if daemon_status; then
+      echo "${QPKG_NAME} is already running"
+    else
+      #echo "Checking if ${QPKG_NAME} is linked to SABnzbdPlus"
+      ${QPKG_ROOT}/link_to_SAB.sh
+      echo "Starting ${QPKG_NAME} ..."
+      start_daemon
+    fi
     ;;
 
   stop)
-    PID=$(cat ${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid)
-    kill -9 ${PID}
+    if daemon_status; then
+      echo "Stopping ${QPKG_NAME} ..."
+      stop_daemon
+    else
+      echo "${QPKG_NAME} is not running"
+    fi
+    ;;
 
-    # Clean up PIDFile
-    if [ -f ${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid ] ; then /bin/rm -f ${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid ; fi
+  status)
+    if daemon_status; then
+      echo "${QPKG_NAME} is running"
+      exit 0
+    else
+      echo "${QPKG_NAME} is not running"
+      exit 1
+    fi
+    ;;
+
+  relink)
+    ${CMD_SETCFG} core linked_to_sabnzbd 0 -f ${QPKG_CONF}
+    echo "relinking ${QPKG_NAME} to SABnzbdPlus"
+    ${QPKG_ROOT}/link_to_SAB.sh
     ;;
 
   restart)
@@ -29,7 +91,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|status|relink|restart}"
     exit 1
 esac
 

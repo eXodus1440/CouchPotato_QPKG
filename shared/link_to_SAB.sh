@@ -2,8 +2,19 @@
 
 CMD_GETCFG="/sbin/getcfg"
 CMD_SETCFG="/sbin/setcfg"
-SYS_QPKG_DIR=$($CMD_SETCFG CouchPotato Install_Path -f /etc/config/qpkg.conf)
-SABnzbdPlus_Installed=$($CMD_SETCFG SABnzbdPlus Status -f /etc/config/qpkg.conf)
+CMD_MKDIR="/bin/mkdir"
+PUBLIC_SHARE=$(/sbin/getcfg SHARE_DEF defPublic -d Public -f /etc/config/def_share.info)
+MULTIMEDIA=$(/sbin/getcfg SHARE_DEF defMultimedia -d Multimedia -f /etc/config/def_share.info)
+
+SYS_QPKG_DIR=$($CMD_GETCFG CouchPotato Install_Path -f /etc/config/qpkg.conf)
+SAB_INSTALLED=$($CMD_GETCFG SABnzbdPlus Status -f /etc/config/qpkg.conf)
+SAB_LINKED=$($CMD_GETCFG core linked_to_sabnzbd -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf)
+
+# Exit if CouchPotato is already linked with SABnzbdPlus
+if [ "${SAB_LINKED}" = "1" ] ; then 
+  #echo "CouchPotato is already linked to SABnzbdPlus"
+  exit 0
+fi
 
 # Determine BASE installation location according to smb.conf
 BASE=
@@ -31,14 +42,7 @@ if [ -z $BASE ] ; then
 fi
 ####
 
-if [ "$SABnzbdPlus_Installed" == "complete" ] ; then 
-  # Set a few defaults, assuming connecting into SABnzbdPlus and not Torrent
-  $CMD_SETCFG core launch_browser 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-  $CMD_SETCFG blackhole enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-  $CMD_SETCFG kickasstorrents enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-  $CMD_SETCFG torrentz enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-  $CMD_SETCFG searcher preferred_method nzb -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-
+if [ "$SAB_INSTALLED" == "complete" ] ; then 
   # Get values from SABnzbdPlus Configs
   SABnzbdPlus_Path=$($CMD_GETCFG SABnzbdPlus Install_Path -f /etc/config/qpkg.conf)
   if [ -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini ] ; then
@@ -58,9 +62,28 @@ if [ "$SABnzbdPlus_Installed" == "complete" ] ; then
     $CMD_SETCFG sabnzbd enabled 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG sabnzbd api_key ${SABnzbdPlus_APIKEY} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG sabnzbd category Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+
     # Set Renamer values based on SABnzbdPlus values
+    [ -d ${BASE}/${MULTIMEDIA}/Movies ] || $CMD_MKDIR -p ${BASE}/${MULTIMEDIA}/Movies
     $CMD_SETCFG renamer enabled 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG renamer from ${BASE}/${PUBLIC_SHARE}/Downloads/complete -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG renamer to ${BASE}/${MULTIMEDIA}/Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG renamer cleanup 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+
+    # Set a few defaults, assuming connecting into SABnzbdPlus and not Torrent
+    $CMD_SETCFG core launch_browser 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG blackhole enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG kickasstorrents enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG torrentz enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG searcher preferred_method nzb -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+
+    # Disable the CouchPotato Updater and setup Wizard
+    $CMD_SETCFG updater enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG core show_wizard 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+
+    # Set CouchPotato as linked to SABnzbdPlus
+    $CMD_SETCFG core linked_to_sabnzbd 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
   fi
-fi    
+fi
+
+exit 0
