@@ -79,6 +79,7 @@ if [ "$SAB_INSTALLED" == "complete" ] ; then
 
     # Disable the CouchPotato Updater and setup Wizard
     $CMD_SETCFG updater enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG updater automatic 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG core show_wizard 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
 
     # Set CouchPotato as linked to SABnzbdPlus
