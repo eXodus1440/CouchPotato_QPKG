@@ -11,7 +11,7 @@ SAB_INSTALLED=$($CMD_GETCFG SABnzbdPlus Status -f /etc/config/qpkg.conf)
 SAB_LINKED=$($CMD_GETCFG core linked_to_sabnzbd -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf)
 
 # Exit if CouchPotato is already linked with SABnzbdPlus
-if [ "${SAB_LINKED}" = "1" ] ; then 
+if [ -n ${SAB_LINKED} ] && [ "${SAB_LINKED}" = "1" ] ; then 
   #echo "CouchPotato is already linked to SABnzbdPlus"
   exit 0
 fi
