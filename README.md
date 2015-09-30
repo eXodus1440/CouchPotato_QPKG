@@ -11,4 +11,4 @@ Steps required to build the package on a QNAP TVS:
     rm -rf CouchPotatoServer
 
     cd ..
-    qbuild
+    qbuild --exclude solaris --exclude *.cmd

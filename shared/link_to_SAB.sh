@@ -3,8 +3,8 @@
 CMD_GETCFG="/sbin/getcfg"
 CMD_SETCFG="/sbin/setcfg"
 CMD_MKDIR="/bin/mkdir"
-PUBLIC_SHARE=$(/sbin/getcfg SHARE_DEF defPublic -d Public -f /etc/config/def_share.info)
-MULTIMEDIA=$(/sbin/getcfg SHARE_DEF defMultimedia -d Multimedia -f /etc/config/def_share.info)
+PUBLIC_SHARE=$($CMD_GETCFG SHARE_DEF defPublic -d Public -f /etc/config/def_share.info)
+MULTIMEDIA=$($CMD_GETCFG SHARE_DEF defMultimedia -d Multimedia -f /etc/config/def_share.info)
 
 SYS_QPKG_DIR=$($CMD_GETCFG CouchPotato Install_Path -f /etc/config/qpkg.conf)
 SAB_INSTALLED=$($CMD_GETCFG SABnzbdPlus Status -f /etc/config/qpkg.conf)
