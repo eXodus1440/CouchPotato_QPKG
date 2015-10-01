@@ -13,7 +13,7 @@ SAB_LINKED=$($CMD_GETCFG core linked_to_sabnzbd -f ${SYS_QPKG_DIR}/.couchpotato/
 # Exit if CouchPotato is already linked with SABnzbdPlus
 if [ -n ${SAB_LINKED} ] && [ "${SAB_LINKED}" = "1" ] ; then 
   #echo "CouchPotato is already linked to SABnzbdPlus"
-  exit 0
+  exit 1
 fi
 
 # Determine BASE installation location according to smb.conf
