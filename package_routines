@@ -137,12 +137,18 @@ pkg_pre_install(){
 
 }
 #
-#pkg_install(){
-#}
+pkg_install(){
+
+  ${SYS_QPKG_DIR}/CouchPotato.sh relink > /tmp/couchpotato_install.log  2>&1
+  echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
+  ${SYS_QPKG_DIR}/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
+  echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
+
+}
 #
 pkg_post_install(){ 
 
-  ${SYS_QPKG_DIR}/CouchPotato.sh stop > /tmp/couchpotato_install.log  2>&1
+  ${SYS_QPKG_DIR}/CouchPotato.sh stop >> /tmp/couchpotato_install.log  2>&1
   echo "Stopping CP: " $? >> /tmp/couchpotato_install.log  2>&1
   ${SYS_QPKG_DIR}/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
   echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
