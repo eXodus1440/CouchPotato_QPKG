@@ -142,6 +142,8 @@ pkg_pre_install(){
 #
 pkg_post_install(){ 
 
-  ${SYS_QPKG_DIR}/CouchPotato.sh restart
+  ${SYS_QPKG_DIR}/CouchPotato.sh stop
+  ${SYS_QPKG_DIR}/CouchPotato.sh relink
+  ${SYS_QPKG_DIR}/CouchPotato.sh start
 
 }
