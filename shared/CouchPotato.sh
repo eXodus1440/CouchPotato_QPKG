@@ -5,13 +5,14 @@ CMD_SETCFG="/sbin/setcfg"
 
 QPKG_NAME="CouchPotato"
 QPKG_ROOT=$(${CMD_GETCFG} ${QPKG_NAME} Install_Path -f ${CONF})
-PYTHON_DIR="/opt/bin"
+PYTHON_DIR="/usr/bin"
 #PATH="${QPKG_ROOT}/bin:${QPKG_ROOT}/env/bin:${PYTHON_DIR}/bin:/usr/local/bin:/bin:/usr/bin:/usr/syno/bin"
-PYTHON="${PYTHON_DIR}/python2.6"
+PYTHON="${PYTHON_DIR}/python2.7"
 COUCHPOTATO="${QPKG_ROOT}/CouchPotato.py"
 QPKG_DATA=${QPKG_ROOT}/.couchpotato
 QPKG_CONF=${QPKG_DATA}/settings.conf
 WEBUI_PORT=$(${CMD_GETCFG} core port -f ${QPKG_CONF})
+if [ -z ${WEBUI_PORT} ] ; then WEBUI_PORT="5050" ; fi # Default to port 5050
 QPKG_PID=${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid
 
 start_daemon() {
