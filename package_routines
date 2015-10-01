@@ -152,6 +152,8 @@ pkg_post_install(){
   echo "Stopping CP: " $? >> /tmp/couchpotato_install.log  2>&1
   ${SYS_QPKG_DIR}/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
   echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
+  cat ${SYS_QPKG_DIR}/.couchpotato/settings.conf >> /tmp/couchpotato_install.log  2>&1
+  echo "" >> /tmp/couchpotato_install.log  2>&1
   ${SYS_QPKG_DIR}/CouchPotato.sh start >> /tmp/couchpotato_install.log  2>&1
   echo "Starting CP: " $? >> /tmp/couchpotato_install.log  2>&1
 
