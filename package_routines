@@ -140,11 +140,8 @@ pkg_pre_install(){
 #pkg_install(){
 #}
 #
-#pkg_post_install(){ 
-#
-  #${SYS_QPKG_DIR}/CouchPotato.sh start
-  #sleep 2
-  #${SYS_QPKG_DIR}/CouchPotato.sh stop
-  #${SYS_QPKG_DIR}/set_SAB_defaults.sh
-#
-#}
+pkg_post_install(){ 
+
+  ${SYS_QPKG_DIR}/CouchPotato.sh restart
+
+}
