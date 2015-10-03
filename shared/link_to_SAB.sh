@@ -42,6 +42,8 @@ if [ -z $BASE ] ; then
 fi
 ####
 
+[ -d ${SYS_QPKG_DIR}/.couchpotato ] || mkdir -p ${SYS_QPKG_DIR}/.couchpotato && touch ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+
 if [ "$SAB_INSTALLED" == "complete" ] ; then 
   # Get values from SABnzbdPlus Configs
   SABnzbdPlus_Path=$($CMD_GETCFG SABnzbdPlus Install_Path -f /etc/config/qpkg.conf)
