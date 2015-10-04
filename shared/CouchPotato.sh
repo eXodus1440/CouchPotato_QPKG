@@ -6,17 +6,15 @@ CMD_SETCFG="/sbin/setcfg"
 QPKG_NAME="CouchPotato"
 QPKG_ROOT=$(${CMD_GETCFG} ${QPKG_NAME} Install_Path -f ${CONF})
 PYTHON_DIR="/usr/bin"
-#PATH="${QPKG_ROOT}/bin:${QPKG_ROOT}/env/bin:${PYTHON_DIR}/bin:/usr/local/bin:/bin:/usr/bin:/usr/syno/bin"
 PYTHON="${PYTHON_DIR}/python2.7"
 COUCHPOTATO="${QPKG_ROOT}/CouchPotato.py"
 QPKG_DATA=${QPKG_ROOT}/.couchpotato
 QPKG_CONF=${QPKG_DATA}/settings.conf
 WEBUI_PORT=$(${CMD_GETCFG} core port -f ${QPKG_CONF})
-if [ -z ${WEBUI_PORT} ] ; then WEBUI_PORT="5050" ; ${CMD_SETCFG} core port -f ${QPKG_CONF} ; fi # Default to port 5050
+if [ -z ${WEBUI_PORT} ] ; then WEBUI_PORT="5050" ; ${CMD_SETCFG} core port ${WEBUI_PORT} -f ${QPKG_CONF} ; fi # Default to port 5050
 QPKG_PID=${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid
 
 start_daemon() {
-  #PATH=${PATH} ${PYTHON} ${COUCHPOTATO} --daemon --pid_file ${QPKG_PID} --data_dir=${QPKG_DATA} --config ${QPKG_CONF}
   ${PYTHON} ${COUCHPOTATO} --daemon --pid_file ${QPKG_PID} --data_dir=${QPKG_DATA} --config ${QPKG_CONF}
 }
 
@@ -54,7 +52,7 @@ case "$1" in
     if daemon_status; then
       echo "${QPKG_NAME} is already running"
     else
-      #echo "Checking if ${QPKG_NAME} is linked to SABnzbdPlus"
+      #echo "Checking if CouchPotato is linked to SABnzbdPlus"
       ${QPKG_ROOT}/link_to_SAB.sh
       echo "Starting ${QPKG_NAME} ..."
       start_daemon
@@ -67,6 +65,7 @@ case "$1" in
       stop_daemon
     else
       echo "${QPKG_NAME} is not running"
+      if [ -f ${QPKG_PID} ] ; then rm -f ${QPKG_PID} ; fi
     fi
     ;;
 

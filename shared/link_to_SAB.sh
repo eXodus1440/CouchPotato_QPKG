@@ -1,14 +1,17 @@
 #!/bin/sh
-
+CONF=/etc/config/qpkg.conf
 CMD_GETCFG="/sbin/getcfg"
 CMD_SETCFG="/sbin/setcfg"
 CMD_MKDIR="/bin/mkdir"
+
 PUBLIC_SHARE=$($CMD_GETCFG SHARE_DEF defPublic -d Public -f /etc/config/def_share.info)
 MULTIMEDIA=$($CMD_GETCFG SHARE_DEF defMultimedia -d Multimedia -f /etc/config/def_share.info)
-
-SYS_QPKG_DIR=$($CMD_GETCFG CouchPotato Install_Path -f /etc/config/qpkg.conf)
-SAB_INSTALLED=$($CMD_GETCFG SABnzbdPlus Status -f /etc/config/qpkg.conf)
-SAB_LINKED=$($CMD_GETCFG core linked_to_sabnzbd -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf)
+QPKG_NAME="CouchPotato"
+QPKG_ROOT=$(${CMD_GETCFG} ${QPKG_NAME} Install_Path -f ${CONF})
+QPKG_DATA=${QPKG_ROOT}/.couchpotato
+QPKG_CONF=${QPKG_DATA}/settings.conf
+SAB_INSTALLED=$($CMD_GETCFG SABnzbdPlus Status -f ${CONF})
+SAB_LINKED=$($CMD_GETCFG core linked_to_sabnzbd -f ${QPKG_CONF})
 
 # Exit if CouchPotato is already linked with SABnzbdPlus
 if [ -n ${SAB_LINKED} ] && [ "${SAB_LINKED}" = "1" ] ; then 
@@ -42,54 +45,55 @@ if [ -z $BASE ] ; then
 fi
 ####
 
-[ -d ${SYS_QPKG_DIR}/.couchpotato ] || mkdir -p ${SYS_QPKG_DIR}/.couchpotato && touch ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+[ -d ${SYS_QPKG_DIR}/.couchpotato ] || mkdir -p ${SYS_QPKG_DIR}/.couchpotato && touch ${QPKG_CONF}
 
 if [ "$SAB_INSTALLED" == "complete" ] ; then 
   # Get values from SABnzbdPlus Configs
-  SABnzbdPlus_Path=$($CMD_GETCFG SABnzbdPlus Install_Path -f /etc/config/qpkg.conf)
-  if [ -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini ] ; then
-    SABnzbdPlus_WEBUI_HTTPS=$($CMD_GETCFG misc enable_https -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
-    SABnzbdPlus_WEBUI_IP=$($CMD_GETCFG misc host -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
+  SABnzbdPlus_Path=$($CMD_GETCFG SABnzbdPlus Install_Path -f ${CONF})
+  SABnzbdPlus_CONF=${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini
+  if [ -f ${SABnzbdPlus_CONF} ] ; then
+    SABnzbdPlus_WEBUI_HTTPS=$($CMD_GETCFG misc enable_https -f ${SABnzbdPlus_CONF})
+    SABnzbdPlus_WEBUI_IP=$($CMD_GETCFG misc host -f ${SABnzbdPlus_CONF})
     if [ "$SABnzbdPlus_WEBUI_HTTPS" = "0" ]; then
-      SABnzbdPlus_WEBUI_PORT=$($CMD_GETCFG misc port -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
-      $CMD_SETCFG sabnzbd host ${SABnzbdPlus_WEBUI_IP}:${SABnzbdPlus_WEBUI_PORT} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+      SABnzbdPlus_WEBUI_PORT=$($CMD_GETCFG misc port -f ${SABnzbdPlus_CONF})
+      $CMD_SETCFG sabnzbd host ${SABnzbdPlus_WEBUI_IP}:${SABnzbdPlus_WEBUI_PORT} -f ${QPKG_CONF}
     else
-      SABnzbdPlus_WEBUI_PORT=$($CMD_GETCFG misc https_port -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
-      $CMD_SETCFG sabnzbd ssl 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-      $CMD_SETCFG sabnzbd host ${SABnzbdPlus_WEBUI_IP}:${SABnzbdPlus_WEBUI_PORT} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+      SABnzbdPlus_WEBUI_PORT=$($CMD_GETCFG misc https_port -f ${SABnzbdPlus_CONF})
+      $CMD_SETCFG sabnzbd ssl 1 -f ${QPKG_CONF}
+      $CMD_SETCFG sabnzbd host ${SABnzbdPlus_WEBUI_IP}:${SABnzbdPlus_WEBUI_PORT} -f ${QPKG_CONF}
     fi
-    SABnzbdPlus_USER=$($CMD_GETCFG misc username -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
-    SABnzbdPlus_PASS=$($CMD_GETCFG misc password -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
-    SABnzbdPlus_APIKEY=$($CMD_GETCFG misc api_key -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
+    SABnzbdPlus_USER=$($CMD_GETCFG misc username -f ${SABnzbdPlus_CONF})
+    SABnzbdPlus_PASS=$($CMD_GETCFG misc password -f ${SABnzbdPlus_CONF})
+    SABnzbdPlus_APIKEY=$($CMD_GETCFG misc api_key -f ${SABnzbdPlus_CONF})
 
     # Set SABnzbdPlus values in CouchPotato 
-    $CMD_SETCFG sabnzbd enabled 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    #$CMD_SETCFG sabnzbd username ${SABnzbdPlus_USER} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    #$CMD_SETCFG sabnzbd password ${SABnzbdPlus_PASS} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG sabnzbd api_key ${SABnzbdPlus_APIKEY} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG sabnzbd category Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG sabnzbd enabled 1 -f ${QPKG_CONF}
+    #$CMD_SETCFG sabnzbd username ${SABnzbdPlus_USER} -f ${QPKG_CONF}
+    #$CMD_SETCFG sabnzbd password ${SABnzbdPlus_PASS} -f ${QPKG_CONF}
+    $CMD_SETCFG sabnzbd api_key ${SABnzbdPlus_APIKEY} -f ${QPKG_CONF}
+    $CMD_SETCFG sabnzbd category Movies -f ${QPKG_CONF}
 
     # Set Renamer values based on SABnzbdPlus values
     [ -d ${BASE}/${MULTIMEDIA}/Movies ] || $CMD_MKDIR -p ${BASE}/${MULTIMEDIA}/Movies
-    $CMD_SETCFG renamer enabled 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG renamer from ${BASE}/${PUBLIC_SHARE}/Downloads/complete/Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG renamer to ${BASE}/${MULTIMEDIA}/Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG renamer cleanup 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG renamer enabled 1 -f ${QPKG_CONF}
+    $CMD_SETCFG renamer from ${BASE}/${PUBLIC_SHARE}/Downloads/complete/Movies -f ${QPKG_CONF}
+    $CMD_SETCFG renamer to ${BASE}/${MULTIMEDIA}/Movies -f ${QPKG_CONF}
+    $CMD_SETCFG renamer cleanup 1 -f ${QPKG_CONF}
 
     # Set a few defaults, assuming connecting into SABnzbdPlus and not Torrent
-    $CMD_SETCFG core launch_browser 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG blackhole enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG kickasstorrents enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG torrentz enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG searcher preferred_method nzb -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG core launch_browser 0 -f ${QPKG_CONF}
+    $CMD_SETCFG blackhole enabled 0 -f ${QPKG_CONF}
+    $CMD_SETCFG kickasstorrents enabled 0 -f ${QPKG_CONF}
+    $CMD_SETCFG torrentz enabled 0 -f ${QPKG_CONF}
+    $CMD_SETCFG searcher preferred_method nzb -f ${QPKG_CONF}
 
     # Disable the CouchPotato Updater and setup Wizard
-    $CMD_SETCFG updater enabled 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG updater automatic 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG core show_wizard 0 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG updater enabled 0 -f ${QPKG_CONF}
+    $CMD_SETCFG updater automatic 0 -f ${QPKG_CONF}
+    $CMD_SETCFG core show_wizard 0 -f ${QPKG_CONF}
 
     # Set CouchPotato as linked to SABnzbdPlus
-    $CMD_SETCFG core linked_to_sabnzbd 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG core linked_to_sabnzbd 1 -f ${QPKG_CONF}
   fi
 fi
 
