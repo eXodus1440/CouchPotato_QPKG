@@ -135,19 +135,19 @@
   #[ -d ${SYS_QPKG_DIR}/.couchpotato ] || $CMD_MKDIR -p ${SYS_QPKG_DIR}/.couchpotato
 #}
 #
-pkg_install(){
-  echo ${SYS_QPKG_DIR} > /tmp/couchpotato_install.log  2>&1
-  ${SYS_QPKG_DIR}/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
-  echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
-  /etc/init.d/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
-  echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
-}
+#pkg_install(){
+  #echo ${SYS_QPKG_DIR} > /tmp/couchpotato_install.log  2>&1
+  #${SYS_QPKG_DIR}/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
+  #echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
+  #/etc/init.d/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
+  #echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
+#}
 #
 pkg_post_install(){ 
   echo ${SYS_QPKG_DIR} > /tmp/couchpotato_install.log  2>&1
   #${SYS_QPKG_DIR}/CouchPotato.sh stop >> /tmp/couchpotato_install.log  2>&1
   #echo "Stopping CP: " $? >> /tmp/couchpotato_install.log  2>&1
-  ${SYS_INIT_DIR}/CouchPotato.sh /CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
+  ${SYS_INIT_DIR}/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
   echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
   cat ${SYS_QPKG_DIR}/.couchpotato/settings.conf >> /tmp/couchpotato_install.log  2>&1
   #echo "" >> /tmp/couchpotato_install.log  2>&1
