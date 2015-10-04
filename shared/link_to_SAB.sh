@@ -45,8 +45,9 @@ if [ -z $BASE ] ; then
 fi
 ####
 
-[ -d ${SYS_QPKG_DIR}/.couchpotato ] || mkdir -p ${SYS_QPKG_DIR}/.couchpotato
-[ -f ${QPKG_CONF}] || touch ${QPKG_CONF}
+# Create Data dir and Config file
+[ -d ${QPKG_DATA} ] || mkdir -p ${QPKG_DATA}
+[ -f ${QPKG_CONF} ] || touch ${QPKG_CONF}
 
 if [ "$SAB_INSTALLED" == "complete" ] ; then 
   # Get values from SABnzbdPlus Configs
