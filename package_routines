@@ -130,24 +130,19 @@
 # Define any package specific operations that shall be performed when
 # the package is installed.
 ######################################################################
-pkg_pre_install(){
-
+#pkg_pre_install(){
   # Create data folder
   #[ -d ${SYS_QPKG_DIR}/.couchpotato ] || $CMD_MKDIR -p ${SYS_QPKG_DIR}/.couchpotato
-
-}
+#}
 #
 pkg_install(){
-
   ${SYS_QPKG_DIR}/CouchPotato.sh relink > /tmp/couchpotato_install.log  2>&1
   echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
-  #${SYS_QPKG_DIR}/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
-  #echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
-
+  /etc/init.d/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
+  echo "Relinking CP: " $? >> /tmp/couchpotato_install.log  2>&1
 }
 #
-pkg_post_install(){ 
-
+#pkg_post_install(){ 
   #${SYS_QPKG_DIR}/CouchPotato.sh stop >> /tmp/couchpotato_install.log  2>&1
   #echo "Stopping CP: " $? >> /tmp/couchpotato_install.log  2>&1
   #${SYS_QPKG_DIR}/CouchPotato.sh relink >> /tmp/couchpotato_install.log  2>&1
@@ -156,5 +151,4 @@ pkg_post_install(){
   #echo "" >> /tmp/couchpotato_install.log  2>&1
   #${SYS_QPKG_DIR}/CouchPotato.sh start >> /tmp/couchpotato_install.log  2>&1
   #echo "Starting CP: " $? >> /tmp/couchpotato_install.log  2>&1
-
-}
+#}
