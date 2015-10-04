@@ -80,9 +80,15 @@ case "$1" in
     ;;
 
   relink)
+    # Stopping CouchPotato before modifying the config.ini file
+    $0 stop
+
     ${CMD_SETCFG} core linked_to_sabnzbd 0 -f ${QPKG_CONF}
     echo "relinking ${QPKG_NAME} to SABnzbdPlus"
     ${QPKG_ROOT}/link_to_SAB.sh
+
+    # Starting SickRage again
+    $0 start
     ;;
 
   restart)
