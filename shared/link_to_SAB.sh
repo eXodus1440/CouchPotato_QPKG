@@ -58,17 +58,21 @@ if [ "$SAB_INSTALLED" == "complete" ] ; then
       $CMD_SETCFG sabnzbd ssl 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
       $CMD_SETCFG sabnzbd host ${SABnzbdPlus_WEBUI_IP}:${SABnzbdPlus_WEBUI_PORT} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     fi
+    SABnzbdPlus_USER=$($CMD_GETCFG misc username -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
+    SABnzbdPlus_PASS=$($CMD_GETCFG misc password -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
     SABnzbdPlus_APIKEY=$($CMD_GETCFG misc api_key -f ${SABnzbdPlus_Path}/.sabnzbd/sabnzbd.ini)
 
     # Set SABnzbdPlus values in CouchPotato 
     $CMD_SETCFG sabnzbd enabled 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    #$CMD_SETCFG sabnzbd username ${SABnzbdPlus_USER} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    #$CMD_SETCFG sabnzbd password ${SABnzbdPlus_PASS} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG sabnzbd api_key ${SABnzbdPlus_APIKEY} -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG sabnzbd category Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
 
     # Set Renamer values based on SABnzbdPlus values
     [ -d ${BASE}/${MULTIMEDIA}/Movies ] || $CMD_MKDIR -p ${BASE}/${MULTIMEDIA}/Movies
     $CMD_SETCFG renamer enabled 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
-    $CMD_SETCFG renamer from ${BASE}/${PUBLIC_SHARE}/Downloads/complete -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
+    $CMD_SETCFG renamer from ${BASE}/${PUBLIC_SHARE}/Downloads/complete/Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG renamer to ${BASE}/${MULTIMEDIA}/Movies -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
     $CMD_SETCFG renamer cleanup 1 -f ${SYS_QPKG_DIR}/.couchpotato/settings.conf
 

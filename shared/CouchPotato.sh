@@ -12,7 +12,7 @@ COUCHPOTATO="${QPKG_ROOT}/CouchPotato.py"
 QPKG_DATA=${QPKG_ROOT}/.couchpotato
 QPKG_CONF=${QPKG_DATA}/settings.conf
 WEBUI_PORT=$(${CMD_GETCFG} core port -f ${QPKG_CONF})
-if [ -z ${WEBUI_PORT} ] ; then WEBUI_PORT="5050" ; fi # Default to port 5050
+if [ -z ${WEBUI_PORT} ] ; then WEBUI_PORT="5050" ; ${CMD_SETCFG} core port -f ${QPKG_CONF} ; fi # Default to port 5050
 QPKG_PID=${QPKG_ROOT}/couchpotato-${WEBUI_PORT}.pid
 
 start_daemon() {
